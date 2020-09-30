@@ -1,0 +1,19 @@
+---
+- name: Add repository
+  yum_repository:
+    name: postgresql11
+    description: Postgresql11 Yum Repo
+    baseurl: https://yum.postgresql.org/11/redhat/rhel-7-x86_64/
+    gpgcheck: no
+
+- name: Ensure PostgreSQL packages are installed.
+  package:
+    name: "{{ postgresql_packages }}"
+    state: present
+    enablerepo: "{{ postgresql_enablerepo | default(omit, true) }}"
+
+- name: Ensure PostgreSQL Python libraries are installed.
+  package:
+    name: "{{ postgresql_python_library }}"
+    state: present
+    enablerepo: "{{ postgresql_enablerepo | default(omit, true) }}"

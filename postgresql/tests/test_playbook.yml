@@ -1,0 +1,7 @@
+---
+- name: "Test deployment of postgres db"
+  hosts: web
+  become: yes
+  remote_user: vagrant
+  roles:
+  - ../../postgresql
