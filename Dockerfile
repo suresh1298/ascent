@@ -1,5 +1,5 @@
 FROM php:7.4.1-apache
-
+# for input module
 MAINTAINER SURESH REDDY
 
 USER root
