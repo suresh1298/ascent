@@ -12,3 +12,6 @@ pe_rep1
 8083 python   branch develope
 
 
+to check all the service status
+ curl --location --request GET 'http://ip/cm/manage/knownservices' --header 'Authorization: Basic YWRtaW46c2VjcmV0'
+
