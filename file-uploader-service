@@ -34,7 +34,7 @@ ARG BRANCH_NAME=''
 ENV BRANCH=${BRANCH_NAME}
 
 RUN git clone -b ${BRANCH} https://oauth2:JpzfRmMkAfLnVd-D1NEv@gitlab.ascent-online.com/employee-proof-submission-/version-1/file-uploader-service.git/ \
-                && mv ./file-uploader-service/* . \
+                && mv ./file-uploader-application/* . \
                 && chmod -R 777 storage 
 
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
