@@ -1,0 +1,61 @@
+FROM php:7.4.1-apache
+# for input module
+MAINTAINER SURESH REDDY
+
+USER root
+
+WORKDIR /var/www/html
+
+RUN apt-get update && apt-get install -y \
+        libpng-dev \
+        zlib1g-dev \
+        libxml2-dev \
+        libzip-dev \
+        libonig-dev \
+        libpq-dev \
+        zip \
+        curl \
+        unzip \
+        git \   
+        npm \
+    && docker-php-ext-configure gd \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pdo pdo_pgsql pgsql \
+    && docker-php-ext-install zip \
+    && docker-php-source delete
+
+ARG CACHE=1
+
+# BRANCH_NAME
+ARG BRANCH_NAME=''
+
+#BRANCH_NAME varible
+ENV BRANCH=${BRANCH_NAME}
+
+RUN git clone -b ${BRANCH} https://oauth2:JpzfRmMkAfLnVd-D1NEv@gitlab.ascent-online.com/employee-proof-submission-/version-1/file-uploader-service.git/ \
+                && mv ./file-uploader-service/* . \
+                && chmod -R 777 storage 
+
+COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+         && composer install \
+         && chown -R www-data:www-data /var/www/html \
+         && a2enmod rewrite
+
+
+
+vhhost.conf
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/html/public
+
+    <Directory "/var/www/html">
+        AllowOverride all
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
