@@ -12,3 +12,8 @@ RUN ls -la && \
         rm -rf /var/lib/apt/lists/*
 EXPOSE 8050
 CMD [ "python", "./main.py" ]
+
+-----
+cd test
+python test_subscribe.py
+python test_publish.py	
