@@ -2,3 +2,7 @@
 PostgreSQL: Show size of all databases
 
 SELECT pg_database.datname as "database_name", pg_database_size(pg_database.datname)/1024/1024 AS size_in_mb FROM pg_database ORDER by size_in_mb DESC;
+
+Finding disk space details Linux server
+https://stackoverflow.com/questions/47394739/finding-disk-space-details-linux-server
+du -sh * | sort -hr | head -n20
