@@ -1,0 +1,110 @@
+                   MongoDB Monitoring with Grafana & Prometheus
+Mongodb exporter is used to export export all the data present in  mongodb
+
+1) Create a file with the name of  mongodb-exporter and go to that directory
+       mkdir mongodb-exporter
+       cd mongodb-exporter 
+2)   Then download the github repo which is used for exporting in our instance we  anre not able to download from github dute to permission issue so i had go through 192.168.9.15 machine and copied to orginal machine
+      copy: scp -p26 /src/test user@ip:/dest/opt/
+      src: the file which u need to copy 
+      dest: were u need to copy 
+      usr: username like powerpay
+     ip: for which machine ur gng to copy
+      
+      wget https://github.com/percona/mongodb_exporter/releases/download/v0.7.1/mongodb_exporter-0.7.1.linux-amd64.tar.gz
+3) Untar the file which you had downloaded and go to that directory:
+    tar xvzf mongodb_exporter-0.7.1.linux-amd64.tar.gz
+*  You should now have 4 files: mongodb_exporter, LICENSE, README.md, CHANGELOG.md.
+*  All files are pretty self explanatory, but we are only interested in the mongodb_exporter binary file here.
+*  As we are going to configure the exporter as a service, create a dedicated user for Prometheus if not already existing.
+    useradd -rs /bin/false prometheus
+     mv mongodb_exporter /usr/local/bin/
+Enabling MongoDB authentication
+
+To ensure it, we are going to setup a basic MongoDB authentication for the MongoDB exporter.
+MongoDB authentication is set using the –auth flag in the Mongo shell.
+By default, mongod does not set this flag, so you should be able to connect to it via localhost.
+      ps aux | grep mongod
+you will get this type of answer:
+  mongodb  13468  1.1  6.9 1490632 281728 ? Ssl  Jan05 2838:27 /usr/bin/mongod --unixSocketPrefix=/run/mongodb --config /etc/mongodb.conf
+1) Connect to your MongoDB instance with mongo.
+mongo --port 27017
+2)  Create an administrator account for your exporter with the cluster monitor role.
+use admin
+db.createUser(
+  {
+    user: "mongodb_exporter",
+    pwd: "password",
+    roles: [
+        { role: "clusterMonitor", db: "admin" },
+        { role: "read", db: "local" }
+    ]
+  }
+)
+user had created 
+USER:  mongodb_exporter
+pwd: password
+dbname: admin
+
+“exit”  to exit form mongodb
+
+mongod --auth --port 27017 --config /etc/mongodb.conf &
+ 
+3) Set your MongoDB URI environment variable, according to the changes that you made before.      
+    export MONGODB_URI=mongodb://mongodb_exporter:password@localhost:27017
+
+Creating a service for the MongoDB exporter:
+1)  Similarly to the MySQLd exporter, we are going to setup the MongoDB exporter as a service.
+2) As usual, head over to /lib/systemd/system and create a new service file for the exporter.
+        cd /lib/systemd/system/
+       vi mongodb_exporter.service    and copy this as it is:
+
+
+             
+        
+ [Unit]
+Description=MongoDB Exporter
+User=prometheus
+
+ [Service]
+Type=simple
+Restart=always
+ExecStart=/usr/local/bin/mongodb_exporter
+
+ [Install]
+WantedBy=multi-user.target
+
+
+From there, don’t forget to restart your system daemon and to start your service.
+
+        sudo systemctl daemon-reload
+
+        sudo systemctl start mongodb_exporter.service
+*  You should always verify that your service is working
+*   As a quick reminder, Percona’s MongoDB exporter runs on port 9216.
+* To ensure that everything is working correctly, run a simple curl command on the port 9216.
+             curl http://localhost:9216/metrics
+Monitoring. Visual perception
+1)  First step is to edit prometheus.yml configuration file. Stop the Prometheus server and add open the file:
+     systemctl stop prometheus
+    vim /etc/prometheus/prometheus.yml
+2) Add the target in prometheus.yml filewith the port of 9216:
+       ...
+-  job_name: ‘postgres_exporter’
+   static_configs:
+     - targets: [‘xxx.xxx.xxx.xxx:9216’]
+SAVE AND REOAD THE FILE
+
+
+
+Grafana on the other hand
+1)  Add the dashbord in grafana using import diffrent diffrent types of dashbords for mongodb better to go with which u need :
+    for my side iam cloning from git gub: from there iam uploading my json file:
+git clone https://github.com/percona/grafana-dashboards.git
+
+
+
+NOTE:
+ For better under stang go through this website:
+ https://devconnected.com/mongodb-monitoring-with-grafana-prometheus/
+ 
